@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SA Tech Events — Unleash Innovation</title>
+
+  <!-- Leaflet (map) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Marker cluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <!-- Google Fonts (Inter + Poppins) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="style.css" />
+  
+</head>
+<body>
+  <header class="hero">
+    <h1>SA Tech Events</h1>
+    <div class="tagline">Discover Cutting Edge Technology Events Across South Africa</div>
+    <div class="controls" role="search" aria-label="Search events">
+      <div class="search" title="Search">
+        <i class="fas fa-search" style="color: rgb(17, 17, 17);"></i>
+        <input id="searchInput" placeholder="Search events, speakers, cities..." aria-label="Search events" />
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Main tabs">
+    <button class="tab active" data-tab="events"><i class="fas fa-calendar-alt"></i> Events</button>
+    <button class="tab" data-tab="map"><i class="fas fa-map-marked-alt"></i> Map</button>
+    <button class="tab" data-tab="add"><i class="fas fa-plus-circle"></i> Add Event</button>
+  </nav>
+
+  <main>
+    <aside class="sidebar" aria-label="Filters">
+      <div class="dropdown">
+        <button class="dropdown-btn" id="categoryDropdown" aria-expanded="false">
+          <span id="selectedCategory">Select Category</span>
+          <i class="fas fa-down"></i>
+        </button>
+        <div class="dropdown-content" id="categoryDropdownContent">
+          <div class="dropdown-item" data-category=""><i class="fas fa-times"></i> Clear Selection</div>
+          <div class="dropdown-item" data-category="Artificial Intelligence"><i class="fas fa-robot"></i> Artificial Intelligence</div>
+          <div class="dropdown-item" data-category="Blockchain"><i class="fas fa-link"></i> Blockchain</div>
+          <div class="dropdown-item" data-category="Cloud Computing"><i class="fas fa-cloud"></i> Cloud Computing</div>
+          <div class="dropdown-item" data-category="Cybersecurity"><i class="fas fa-shield-alt"></i> Cybersecurity</div>
+          <div class="dropdown-item" data-category="Data Science"><i class="fas fa-database"></i> Data Science</div>
+          <div class="dropdown-item" data-category="FinTech"><i class="fas fa-money-bill-wave"></i> FinTech</div>
+          <div class="dropdown-item" data-category="Innovation"><i class="fas fa-lightbulb"></i> Innovation</div>
+          <div class="dropdown-item" data-category="Startups"><i class="fas fa-rocket"></i> Startups</div>
+        </div>
+      </div>
+
+      <div class="filters">
+        <div>
+          <div class="small-muted">City</div>
+          <select id="citySelect" aria-label="Filter by city">
+            <option value="">All</option>
+            <option>Cape Town</option>
+            <option>Johannesburg</option>
+            <option>Durban</option>
+            <option>Pretoria</option>
+            <option>Stellenbosch</option>
+          </select>
+        </div>
+        <div>
+          <div class="small-muted">Date</div>
+          <input type="date" id="dateFilter" aria-label="Filter by date" />
+        </div>
+        <div>
+          <div class="small-muted">Sort by</div>
+          <select id="sortSelect" aria-label="Sort events">
+            <option value="dateAsc">Date — Soonest</option>
+            <option value="dateDesc">Date — Latest</option>
+            <option value="city">City</option>
+            <option value="popularity">Popularity</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn" id="clearFilters"><i class="fas fa-eraser"></i> Clear Filters</button>
+        </div>
+      </div>
+    </aside>
+
+    <section id="centerContent">
+      <div class="events-container" id="eventsView">
+        <div class="events-header">
+          <div class="small-muted" id="resultsCount">Showing 0 events</div>
+          <button class="chip" id="viewMapBtn"><i class="fas fa-map"></i> Map View</button>
+        </div>
+        <div class="events-grid" id="eventsGrid"></div>
+      </div>
+
+      <div id="mapView" style="display: none;">
+        <div class="map-card">
+          <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button class="btn secondary" id="btnLocate"><i class="fas fa-location-arrow"></i> Use My Location</button>
+              <div class="small-muted">Click markers for details. Zoom/pan to navigate.</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <input id="mapSearch" placeholder="Zoom to city (e.g. Johannesburg)" style="padding: 10px 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: white;" aria-label="Search map location" />
+              <button class="btn" id="mapSearchBtn"><i class="fas fa-search-location"></i> Go</button>
+            </div>
+          </div>
+          <div id="mapFull" class="map-frame" style="margin-top: 12px;"></div>
+        </div>
+      </div>
+
+      <div id="addView" style="display: none;">
+        <section class="sidebar">
+          <h3 style="margin-top: 0; font-family: Poppins; font-weight: 700; font-size: 20px;">Create New Event</h3>
+          <form id="eventForm">
+            <div class="form-grid">
+              <div class="form-row">
+                <label for="evTitle">Title</label>
+                <input id="evTitle" required type="text" placeholder="Event title" />
+              </div>
+              <div class="form-row">
+                <label for="evCategory">Category</label>
+                <select id="evCategory" required>
+                  <option>Innovation</option>
+                  <option>Startups</option>
+                  <option>Artificial Intelligence</option>
+                  <option>Blockchain</option>
+                  <option>Cloud Computing</option>
+                  <option>Cybersecurity</option>
+                  <option>Data Science</option>
+                  <option>FinTech</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label for="evDate">Date</label>
+                <input id="evDate" required type="date" />
+              </div>
+              <div class="form-row">
+                <label for="evTime">Time</label>
+                <input id="evTime" type="time" />
+              </div>
+              <div class="form-row">
+                <label for="evCity">City</label>
+                <input id="evCity" type="text" placeholder="City (e.g. Johannesburg)" />
+              </div>
+              <div class="form-row">
+                <label for="evVenue">Venue</label>
+                <input id="evVenue" type="text" placeholder="Venue name / address" />
+              </div>
+              <div class="form-row full">
+                <label for="evImage">Event Image</label>
+                <input id="evImage" type="file" accept="image/*" />
+                <div class="small-muted">Optional: Upload an image or a default will be used.</div>
+              </div>
+              <div class="form-row full">
+                <label for="evDesc">Description</label>
+                <textarea id="evDesc" placeholder="Short description"></textarea>
+              </div>
+              <div class="form-row">
+                <label for="evUrl">Event URL</label>
+                <input id="evUrl" type="text" placeholder="https://..." />
+              </div>
+              <div class="form-row">
+                <label for="evSpeakers">Speakers (comma separated)</label>
+                <input id="evSpeakers" type="text" placeholder="Jane Doe, John Smith" />
+              </div>
+              <div class="form-row">
+                <label for="evLat">Latitude</label>
+                <input id="evLat" type="text" placeholder="Click map or use my location" />
+              </div>
+              <div class="form-row">
+                <label for="evLng">Longitude</label>
+                <input id="evLng" type="text" placeholder="Click map or use my location" />
+              </div>
+              <div class="form-row full" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button class="btn" type="submit"><i class="fas fa-save"></i> Save Event</button>
+                <button class="btn secondary" id="btnClearForm" type="button"><i class="fas fa-eraser"></i> Clear</button>
+                <button class="btn secondary" id="btnPickLocation" type="button"><i class="fas fa-map-pin"></i> Pick on Map</button>
+                <div class="small-muted" style="margin-left: auto;">Click the map below to set coordinates.</div>
+              </div>
+              <div class="form-row full">
+                <div id="miniMap" class="map-frame" style="height: 240px;"></div>
+                <div class="small-muted" style="margin-top: 8px;">Click on the map to select event location.</div>
+              </div>
+            </div>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <aside>
+      <div class="map-card" style="margin-bottom: 16px;">
+        <div class="section-title">Event Locations</div>
+        <div id="miniMapRight" class="map-frame" style="height: 200px;"></div>
+        <div class="small-muted" style="margin-top: 10px;">Click markers to view details.</div>
+      </div>
+      <div class="featured">
+        <div class="section-title">Featured Event</div>
+        <div style="font-family: Poppins; font-weight: 700; font-size: 18px; margin-top: 8px;" id="featuredTitle">SA Cloud Summit — Cape Town</div>
+        <div class="small-muted" style="margin-top: 8px;" id="featuredDesc">Join industry leaders to explore cloud computing innovations and network with professionals.</div>
+        <div style="margin-top: 12px; display: flex; gap: 10px;">
+          <a class="btn" id="featuredBtn" target="_blank" rel="noopener"><i class="fas fa-ticket-alt"></i> Register</a>
+          <button class="chip" id="shareFeatured"><i class="fas fa-share-alt"></i> Share</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-section">
+        <h4>About SA Tech Events</h4>
+        <p>Your premier platform for discovering and sharing technology events across South Africa. Connect with innovators, startups, and industry leaders.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <p><a href="#events">Browse Events</a></p>
+        <p><a href="#add">Add Event</a></p>
+        <p><a href="#map">View Map</a></p>
+        <p><a href="mailto:info@satechevents.com">Contact Us</a></p>
+      </div>
+      <div class="footer-section">
+        <h4>Connect With Us</h4>
+        <div class="footer-social">
+          <a href="https://linkedin.com" target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
+          <a href="https://facebook.com" target="_blank" rel="noopener"><i class="fab fa-facebook"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2025 SA Tech Events — All Rights Reserved
+    </div>
+  </footer>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-hidden="true">
+    <div class="modal" role="document">
+      <button class="close" id="closeModal" aria-label="Close modal">&times;</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
