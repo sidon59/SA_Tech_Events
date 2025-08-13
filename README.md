@@ -1,6 +1,8 @@
-# TechSA Events
+# SA Tech Events
 
-**Tagline:** Stay ahead of the curve with South Africa's top tech events.  
+---
+
+ Stay ahead of the curve with South Africa's top tech events.  
 
 TechSA Events is a platform that helps South Africans discover, explore and connect through technology events, from AI meetups to innovation summits.  
 
@@ -25,4 +27,6 @@ TechSA Events is a platform that helps South Africans discover, explore and conn
 
 ---
 Live Demo :  https://sidon59.github.io/SA_Tech_Events/
+
+---
 Project still in progress!!!!!!!!!!
