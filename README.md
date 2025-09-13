@@ -27,6 +27,7 @@ TechSA Events is a platform that helps South Africans discover, explore and conn
 
 ---
 Live Demo :  https://sidon59.github.io/SA_Tech_Events/
+             sa-tech-events.vercel.app
 
 ---
 Project still in progress!!!!!!!!!!
